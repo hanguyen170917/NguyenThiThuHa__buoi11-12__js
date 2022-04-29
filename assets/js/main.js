@@ -1,5 +1,13 @@
+function getEle(id) {
+  return document.getElementById(id);
+}
+
 var services = new Services();
 
+var validation = new Validation();
+
+var usersArr;
+// show data
 function getListUsers() {
   services
     .fetchData()
@@ -14,6 +22,7 @@ function getListUsers() {
 
 getListUsers();
 
+// Create table user
 function renderHTML(data) {
   var content = "";
   for (var i = 0; i < data.length; i++) {
@@ -39,16 +48,94 @@ function renderHTML(data) {
   document.getElementById("tblDanhSachNguoiDung").innerHTML = content;
 }
 
-document
-  .getElementById("btnThemNguoiDung")
-  .addEventListener("click", function () {
-    document.getElementById("titleModal").innerHTML = "Thêm người dùng";
+// Show module addUser
+getEle("btnThemNguoiDung").addEventListener("click", function () {
+  document.getElementById("titleModal").innerHTML = "Thêm người dùng";
 
-    var footer =
-      "<button class='btn btn-success' onclick='addUser()'>Thêm</button>";
-    document.querySelector(".modal-footer").innerHTML = footer;
-  });
+  var footer =
+    "<button class='btn btn-success' onclick='addUser()'>Thêm</button>";
+  document.querySelector(".modal-footer").innerHTML = footer;
 
+  getEle("TaiKhoan").value = "";
+  getEle("HoTen").value = "";
+  getEle("MatKhau").value = "";
+  getEle("Email").value = "";
+  getEle("HinhAnh").value = "";
+  getEle("loaiNguoiDung").value = "";
+  getEle("loaiNgonNgu").value = "";
+  getEle("MoTa").value = "";
+});
+
+// getInfoUser
+function getInfoUser(id) {
+  var _taiKhoan = getEle("TaiKhoan").value;
+  var _hoTen = getEle("HoTen").value;
+  var _matKhau = getEle("MatKhau").value;
+  var _email = getEle("Email").value;
+  var _hinhAnh = getEle("HinhAnh").value;
+  var _loaiND = getEle("loaiNguoiDung").value;
+  var _ngonNgu = getEle("loaiNgonNgu").value;
+  var _mota = getEle("MoTa").value;
+
+  var isValid = true;
+
+  // Validation userName
+  isValid &= validation.checkNull(
+    _taiKhoan,
+    "tbTKND",
+    "(*)Tài khoản không được rỗng"
+  );
+
+  // Validation name
+  isValid &= validation.checkNull(
+    _hoTen,
+    "tbName",
+    "(*)Họ tên không được rỗng"
+  );
+
+  // Validation pass
+  isValid &= validation.checkNull(
+    _matKhau,
+    "tbPass",
+    "(*)Mật khẩu không được rỗng"
+  );
+
+  // Validation email
+  isValid &= validation.checkNull(
+    _email,
+    "tbEmail",
+    "(*)Email không được rỗng"
+  );
+
+  // Validdation img
+  isValid &= validation.checkNull(
+    _hinhAnh,
+    "tbImg",
+    "(*)Hình ảnh không được rỗng"
+  );
+
+  // Validation description
+  isValid &= validation.checkNull(_mota, "tbMota", "(*)Mô tả không được rỗng");
+
+  if (!isValid) {
+    return null;
+  }
+
+  var user = new Users(
+    id,
+    _taiKhoan,
+    _hoTen,
+    _matKhau,
+    _email,
+    _loaiND,
+    _ngonNgu,
+    _mota,
+    _hinhAnh
+  );
+  return user;
+}
+
+// deleteUser
 function deleteUser(id) {
   services
     .deleteUser(id)
@@ -60,40 +147,25 @@ function deleteUser(id) {
     });
 }
 
+// addUSer
 function addUser() {
-  var _taiKhoan = getEle("TaiKhoan").value;
-  var _hoTen = getEle("HoTen").value;
-  var _matKhau = getEle("MatKhau").value;
-  var _email = getEle("Email").value;
-  var _hinhAnh = getEle("HinhAnh").value;
-  var _loaiND = getEle("loaiNguoiDung").value;
-  var _ngonNgu = getEle("loaiNgonNgu").value;
-  var _mota = getEle("MoTa").value;
+  var user = getInfoUser("");
 
-  var user = new Users(
-    "",
-    _taiKhoan,
-    _hoTen,
-    _matKhau,
-    _email,
-    _loaiND,
-    _ngonNgu,
-    _mota,
-    _hinhAnh
-  );
+  if (user) {
+    services
+      .addUserApi(user)
+      .then(function (result) {
+        getListUsers();
 
-  services
-    .addUserApi(user)
-    .then(function (result) {
-      getListUsers();
-
-      document.querySelector(".close").click();
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+        document.querySelector(".close").click();
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
 }
 
+// editUser
 function editUser(id) {
   document.getElementById("titleModal").innerHTML = "Sửa thông tin người dùng";
 
@@ -120,28 +192,9 @@ function editUser(id) {
     });
 }
 
+// updateUser
 function updateUser(id) {
-  var _taiKhoan = getEle("TaiKhoan").value;
-  var _hoTen = getEle("HoTen").value;
-  var _matKhau = getEle("MatKhau").value;
-  var _email = getEle("Email").value;
-  var _hinhAnh = getEle("HinhAnh").value;
-  var _loaiND = getEle("loaiNguoiDung").value;
-  var _ngonNgu = getEle("loaiNgonNgu").value;
-  var _mota = getEle("MoTa").value;
-
-  var user = new Users(
-    id,
-    _taiKhoan,
-    _hoTen,
-    _matKhau,
-    _email,
-    _loaiND,
-    _ngonNgu,
-    _mota,
-    _hinhAnh
-  );
-  console.log(user);
+  var user = getInfoUser(id);
 
   services
     .updateUserApi(user)
@@ -153,8 +206,4 @@ function updateUser(id) {
     .catch(function (error) {
       console.log(error);
     });
-}
-
-function getEle(id) {
-  return document.getElementById(id);
 }
